@@ -19,8 +19,9 @@
   --color-rose: oklch(0.72 0.14 20);
   --color-agentgray: oklch(0.66 0.012 265);
   --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
-  /* Plex Mono엔 한글 글리프가 없어 한글은 Pretendard로 폴백 — 코드·해시는 mono, 한글은 본문과 같은 서체 */
-  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", var(--font-pretendard), "Apple SD Gothic Neo", monospace;
+  /* mono 계열도 Pretendard로 통일 — 숫자 정렬이 필요한 자리는 tnum(고정폭 숫자)으로 보정 */
+  --font-mono: var(--font-pretendard), "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
+  --font-mono--font-feature-settings: "tnum";
   --breakpoint-nav: 900px;
   --breakpoint-wide: 1180px;
 }
@@ -67,6 +68,7 @@ summary {
 }
 .mono-label {
   font-family: var(--font-mono);
+  font-feature-settings: "tnum";
   font-size: 10.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -84,6 +86,7 @@ summary {
 }
 .chip .k {
   font-family: var(--font-mono);
+  font-feature-settings: "tnum";
   font-size: 10px;
   letter-spacing: 0.1em;
   color: var(--color-faint);

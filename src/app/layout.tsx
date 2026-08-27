@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { IBM_Plex_Mono } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
 
@@ -7,13 +6,6 @@ import './globals.css';
 const pretendard = localFont({
   src: '../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2',
   variable: '--font-pretendard',
-  display: 'swap',
-});
-
-const plexMono = IBM_Plex_Mono({
-  weight: ['400', '500', '600'],
-  subsets: ['latin'],
-  variable: '--font-plex-mono',
   display: 'swap',
 });
 import { listMeetings } from '@/lib/store';
@@ -55,7 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }));
 
   return (
-    <html lang="ko" className={`${pretendard.variable} ${plexMono.variable}`}>
+    <html lang="ko" className={pretendard.variable}>
       <body className="antialiased">
         <AppShell meetings={treeMeetings} projects={treeProjects}>
           {children}
