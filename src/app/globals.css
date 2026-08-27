@@ -20,7 +20,8 @@
   --color-rose: oklch(0.72 0.14 20);
   --color-agentgray: oklch(0.66 0.012 265);
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  /* Plex Mono엔 한글 글리프가 없어 한글은 Pretendard로 폴백 — 코드·해시는 mono, 한글은 본문과 같은 서체 */
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", monospace;
   --breakpoint-nav: 900px;
   --breakpoint-wide: 1180px;
 }
