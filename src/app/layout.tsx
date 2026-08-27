@@ -1,5 +1,21 @@
 import type { Metadata } from 'next';
+import { IBM_Plex_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
+
+// globals.css의 @import url()은 Tailwind 확장 CSS 뒤로 밀려 빌드에서 제거된다 — next/font로 셀프호스팅
+const pretendard = localFont({
+  src: '../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2',
+  variable: '--font-pretendard',
+  display: 'swap',
+});
+
+const plexMono = IBM_Plex_Mono({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  variable: '--font-plex-mono',
+  display: 'swap',
+});
 import { listMeetings } from '@/lib/store';
 import { listArtifacts } from '@/lib/artifacts';
 import AppShell, { type TreeMeeting, type TreeProject } from '@/components/shell/AppShell';
@@ -39,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }));
 
   return (
-    <html lang="ko">
+    <html lang="ko" className={`${pretendard.variable} ${plexMono.variable}`}>
       <body className="antialiased">
         <AppShell meetings={treeMeetings} projects={treeProjects}>
           {children}

@@ -1,6 +1,5 @@
 @import "tailwindcss";
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+/* 폰트는 layout.tsx의 next/font로 셀프호스팅 — 외부 @import url()은 Tailwind 확장 뒤로 밀려 빌드에서 삭제되므로 쓰지 않는다 */
 
 /* 워크로그 다크 단일 테마 — 디자인 핸드오프 토큰 */
 @theme {
@@ -19,9 +18,9 @@
   --color-violet: oklch(0.72 0.13 310);
   --color-rose: oklch(0.72 0.14 20);
   --color-agentgray: oklch(0.66 0.012 265);
-  --font-sans: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
+  --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
   /* Plex Mono엔 한글 글리프가 없어 한글은 Pretendard로 폴백 — 코드·해시는 mono, 한글은 본문과 같은 서체 */
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", monospace;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", var(--font-pretendard), "Apple SD Gothic Neo", monospace;
   --breakpoint-nav: 900px;
   --breakpoint-wide: 1180px;
 }
