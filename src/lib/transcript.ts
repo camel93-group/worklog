@@ -8,7 +8,7 @@ export interface ChatMessage {
 const LINE_RE = /^\[(.+?)\]\s*([^:]+?):\s*(.*)$/;
 
 /**
- * "[13시 36분 21초] 황이성: 텍스트" 형식의 트랜스크립트를 채팅 메시지 목록으로 파싱.
+ * "[13시 36분 21초] 홍길동: 텍스트" 형식의 트랜스크립트를 채팅 메시지 목록으로 파싱.
  * 형식이 전혀 맞지 않으면 null (호출부에서 <pre> 폴백).
  */
 export function parseTranscript(text: string): ChatMessage[] | null {
