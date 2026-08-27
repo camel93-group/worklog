@@ -1,0 +1,132 @@
+@import "tailwindcss";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+/* 워크로그 다크 단일 테마 — 디자인 핸드오프 토큰 */
+@theme {
+  --color-surface-0: oklch(0.145 0.01 265);
+  --color-surface-1: oklch(0.188 0.012 265);
+  --color-surface-2: oklch(0.215 0.012 265);
+  --color-surface-3: oklch(0.256 0.012 265);
+  --color-line: oklch(0.29 0.012 265);
+  --color-graphline: oklch(0.34 0.012 265);
+  --color-ink: oklch(0.94 0.005 265);
+  --color-dim: oklch(0.7 0.012 265);
+  --color-faint: oklch(0.56 0.012 265);
+  --color-mint: oklch(0.74 0.13 168);
+  --color-amber: oklch(0.76 0.13 62);
+  --color-blue: oklch(0.72 0.13 258);
+  --color-violet: oklch(0.72 0.13 310);
+  --color-rose: oklch(0.72 0.14 20);
+  --color-agentgray: oklch(0.66 0.012 265);
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --breakpoint-nav: 900px;
+  --breakpoint-wide: 1180px;
+}
+
+body {
+  background: var(--color-surface-0);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.72;
+}
+
+/* Tailwind v4 preflight는 버튼 커서를 default로 두므로 전역 복원 */
+button:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.rise { animation: rise 220ms ease; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 13px; height: 13px; border-radius: 999px;
+  border: 2px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-top-color: currentColor;
+  animation: spin 700ms linear infinite;
+}
+
+/* 공통 시맨틱 클래스 */
+.card {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-line);
+  border-radius: 15px;
+  box-shadow: inset 0 1px 0 oklch(0.3 0.012 265), 0 14px 30px -26px black;
+}
+.panel {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+}
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  color: var(--color-dim);
+  white-space: nowrap;
+}
+.chip .k {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--color-faint);
+}
+
+/* 액센트 칩/배지: 배경 16–20% + 보더 34–38% + 밝은 텍스트 */
+.chip-mint, .chip-amber, .chip-blue, .chip-violet, .chip-rose, .chip-gray {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 3px 10px; font-size: 11.5px;
+  border: 1px solid; white-space: nowrap;
+}
+.chip-mint { background: color-mix(in oklab, var(--color-mint) 18%, var(--color-surface-2)); border-color: color-mix(in oklab, var(--color-mint) 36%, transparent); color: color-mix(in oklab, var(--color-mint) 72%, white); }
+.chip-amber { background: color-mix(in oklab, var(--color-amber) 18%, var(--color-surface-2)); border-color: color-mix(in oklab, var(--color-amber) 36%, transparent); color: color-mix(in oklab, var(--color-amber) 72%, white); }
+.chip-blue { background: color-mix(in oklab, var(--color-blue) 18%, var(--color-surface-2)); border-color: color-mix(in oklab, var(--color-blue) 36%, transparent); color: color-mix(in oklab, var(--color-blue) 72%, white); }
+.chip-violet { background: color-mix(in oklab, var(--color-violet) 18%, var(--color-surface-2)); border-color: color-mix(in oklab, var(--color-violet) 36%, transparent); color: color-mix(in oklab, var(--color-violet) 72%, white); }
+.chip-rose { background: color-mix(in oklab, var(--color-rose) 18%, var(--color-surface-2)); border-color: color-mix(in oklab, var(--color-rose) 36%, transparent); color: color-mix(in oklab, var(--color-rose) 72%, white); }
+.chip-gray { background: var(--color-surface-3); border-color: var(--color-line); color: var(--color-dim); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border-radius: 10px; padding: 7px 14px;
+  font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface-2);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms, opacity 140ms;
+}
+.btn:hover { background: var(--color-surface-3); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn-primary {
+  background: color-mix(in oklab, var(--color-mint) 20%, var(--color-surface-2));
+  border-color: color-mix(in oklab, var(--color-mint) 38%, transparent);
+  color: color-mix(in oklab, var(--color-mint) 75%, white);
+}
+.btn-primary:hover { background: color-mix(in oklab, var(--color-mint) 28%, var(--color-surface-2)); }
+.btn-rose {
+  background: transparent;
+  border-color: color-mix(in oklab, var(--color-rose) 40%, transparent);
+  color: color-mix(in oklab, var(--color-rose) 78%, white);
+}
+.btn-rose:hover { background: color-mix(in oklab, var(--color-rose) 14%, var(--color-surface-2)); }
+
+/* 커스텀 스크롤 영역 */
+.scrollbox::-webkit-scrollbar { width: 8px; height: 8px; }
+.scrollbox::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: 999px; }

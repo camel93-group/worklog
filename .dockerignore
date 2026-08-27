@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env*
+worklog-data
+docs
+launchd
+scripts
+*.md
+*.swp
+.DS_Store

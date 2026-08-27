@@ -1,0 +1,36 @@
+services:
+  worklog-db:
+    image: postgres:17-alpine
+    container_name: worklog-db
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${WORKLOG_DB_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: worklog
+      POSTGRES_PASSWORD: ${WORKLOG_DB_PASSWORD:?WORKLOG_DB_PASSWORD is not set (see .env.example)}
+      POSTGRES_DB: worklog
+    volumes:
+      - ${WORKLOG_DATA_DIR:?WORKLOG_DATA_DIR is not set (see .env.example)}/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U worklog -d worklog"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  worklog-web:
+    build: .
+    container_name: worklog-web
+    restart: unless-stopped
+    ports:
+      - "${WORKLOG_WEB_PORT:-3500}:3500"
+    environment:
+      # 컨테이너 안에서는 compose 네트워크의 서비스 이름으로 DB 에 접속한다
+      DATABASE_URL: postgres://worklog:${WORKLOG_DB_PASSWORD}@worklog-db:5432/worklog
+      DATA_DIR: /data
+      AILOG_TOKEN: ${AILOG_TOKEN:-}
+    volumes:
+      # 봇(voiceMeetBot)이 쓰는 회의 레코드 디렉터리
+      - ${MEETING_DATA_DIR:?MEETING_DATA_DIR is not set (see .env.example)}:/data
+    depends_on:
+      worklog-db:
+        condition: service_healthy

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.martin.worklog-web</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/martin/.nvm/versions/node/v24.18.0/bin/node</string>
+    <string>/Users/martin/workspace/worklog/node_modules/next/dist/bin/next</string>
+    <string>start</string>
+    <string>-H</string><string>0.0.0.0</string>
+    <string>-p</string><string>3500</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/martin/workspace/worklog</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/martin/Library/Logs/worklog/web.log</string>
+  <key>StandardErrorPath</key><string>/Users/martin/Library/Logs/worklog/web.err.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/martin/.local/bin:/Users/martin/.nvm/versions/node/v24.18.0/bin</string>
+  </dict>
+</dict>
+</plist>
