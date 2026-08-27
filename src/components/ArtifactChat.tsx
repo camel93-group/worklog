@@ -115,7 +115,7 @@ export default function ArtifactChat({
                 </summary>
                 <div className="border-t border-line px-3 py-2 space-y-1 max-h-[220px] overflow-y-auto scrollbox">
                   {group.items.map((t, j) => (
-                    <p key={j} className="rounded-lg bg-surface-2 px-2.5 py-1.5 font-mono text-[11px] leading-5 text-faint break-all">
+                    <p key={j} className="rounded-lg bg-surface-2 px-2.5 py-1.5 font-mono text-[11px] leading-5 text-faint whitespace-pre-wrap break-words">
                       {t.text}
                     </p>
                   ))}
