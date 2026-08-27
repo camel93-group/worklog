@@ -8,6 +8,14 @@ import ProjectDeleteButton from '@/components/artifacts/ProjectDeleteButton';
 
 export const dynamic = 'force-dynamic';
 
+/** git remote 주소 → 브라우저로 열 수 있는 웹 URL (변환 불가 시 null) */
+function remoteWebUrl(remote: string): string | null {
+  const ssh = remote.match(/^(?:ssh:\/\/)?git@([^:/]+)[:/](.+?)(?:\.git)?$/);
+  if (ssh) return `https://${ssh[1]}/${ssh[2]}`;
+  if (/^https?:\/\//.test(remote)) return remote.replace(/\.git$/, '');
+  return null;
+}
+
 export default async function CommitPage({
   params,
   searchParams,
@@ -20,6 +28,7 @@ export default async function CommitPage({
   const nodes = await loadGraph(repo);
   if (nodes.length === 0) notFound();
   const meta = await getProjectMeta(repo);
+  const remoteUrl = meta?.remote ? remoteWebUrl(meta.remote) : null;
 
   const selected = nodes.find((n) => n.hash === commit || n.shortHash === commit) ?? nodes[0];
   const history = tab === 'history';
@@ -37,9 +46,26 @@ export default async function CommitPage({
             <span className="ml-2 text-[12px] text-faint font-normal">{repo.slice(0, 12)}</span>
           </h1>
           <p className="mt-1 font-mono text-[11px] text-faint">
-            {meta?.remote
-              ? `REMOTE ${meta.remote}`
-              : 'REMOTE 미등록 — 저장소에서 git remote add origin <url> 후 커밋하면 자동 등록'}
+            {meta?.remote ? (
+              remoteUrl ? (
+                <>
+                  REMOTE{' '}
+                  <a
+                    href={remoteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:text-dim transition-colors"
+                  >
+                    {meta.remote}
+                  </a>{' '}
+                  ↗
+                </>
+              ) : (
+                `REMOTE ${meta.remote}`
+              )
+            ) : (
+              'REMOTE 미등록 — 저장소에서 git remote add origin <url> 후 커밋하면 자동 등록'
+            )}
           </p>
         </div>
         <div className="pt-1 shrink-0">

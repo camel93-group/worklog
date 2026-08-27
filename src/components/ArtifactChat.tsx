@@ -37,6 +37,63 @@ function mergeStream(transcript: TranscriptItem[], markers: CommitMarker[]): Str
   return stream;
 }
 
+/* 도구별 액센트 — 실행(amber)·변경(mint)·조회(blue)·위임(violet) */
+const TOOL_ACCENT: Record<string, string> = {
+  Bash: 'var(--color-amber)',
+  Write: 'var(--color-mint)',
+  Edit: 'var(--color-mint)',
+  NotebookEdit: 'var(--color-mint)',
+  Read: 'var(--color-blue)',
+  Grep: 'var(--color-blue)',
+  Glob: 'var(--color-blue)',
+  WebFetch: 'var(--color-blue)',
+  WebSearch: 'var(--color-blue)',
+  Skill: 'var(--color-violet)',
+  Task: 'var(--color-violet)',
+  Agent: 'var(--color-violet)',
+};
+
+interface ToolCard {
+  tool?: string;
+  call: string;
+  output?: string;
+}
+
+/** 호출(tool 있음)과 바로 뒤따르는 결과(`→ …`)를 한 카드로 묶는다 */
+function toToolCards(items: TranscriptItem[]): ToolCard[] {
+  const cards: ToolCard[] = [];
+  for (const it of items) {
+    const text = it.text ?? '';
+    if (!it.tool && /^→\s?/.test(text)) {
+      const output = text.replace(/^→\s?/, '');
+      const last = cards.at(-1);
+      if (last && last.output === undefined) last.output = output;
+      else cards.push({ call: '', output });
+    } else {
+      // "Bash: 설명"처럼 도구명이 앞에 중복되면 떼어낸다 (배지가 이미 보여줌)
+      const call = it.tool && text.startsWith(`${it.tool}:`) ? text.slice(it.tool.length + 1).trim() : text;
+      cards.push({ tool: it.tool, call });
+    }
+  }
+  return cards;
+}
+
+function ToolBadge({ tool }: { tool: string }) {
+  const accent = TOOL_ACCENT[tool] ?? 'var(--color-agentgray)';
+  return (
+    <span
+      className="shrink-0 rounded-md border px-1.5 font-mono text-[10px] leading-[18px]"
+      style={{
+        background: `color-mix(in oklab, ${accent} 16%, var(--color-surface-2))`,
+        borderColor: `color-mix(in oklab, ${accent} 34%, transparent)`,
+        color: `color-mix(in oklab, ${accent} 72%, white)`,
+      }}
+    >
+      {tool}
+    </span>
+  );
+}
+
 function groupItems(stream: StreamItem[]) {
   const groups: (
     | { kind: 'msg'; item: TranscriptItem }
@@ -105,20 +162,49 @@ export default function ArtifactChat({
           }
           if (group.kind === 'tools') {
             const toolNames = [...new Set(group.items.map((t) => t.tool).filter(Boolean))].slice(0, 3);
+            const cards = toToolCards(group.items);
             return (
               <details key={i} className="rounded-xl border border-line bg-surface-1">
                 <summary className="cursor-pointer select-none px-4 py-2 text-[11.5px] text-faint hover:text-dim flex items-center gap-2">
-                  <span>▸ 도구 작업 {group.items.length}건</span>
+                  <span>▸ 도구 작업 {cards.length}건</span>
                   {toolNames.length > 0 && (
                     <span className="font-mono text-[10px]">{toolNames.join(' · ')}</span>
                   )}
                 </summary>
-                <div className="border-t border-line px-3 py-2 space-y-1 max-h-[220px] overflow-y-auto scrollbox">
-                  {group.items.map((t, j) => (
-                    <p key={j} className="rounded-lg bg-surface-2 px-2.5 py-1.5 font-mono text-[11px] leading-5 text-faint whitespace-pre-wrap break-words">
-                      {t.text}
-                    </p>
-                  ))}
+                <div className="border-t border-line px-3 py-2.5 space-y-2 max-h-[420px] overflow-y-auto scrollbox">
+                  {cards.map((card, j) => {
+                    const [callHead, ...callRest] = card.call.split('\n');
+                    const callBody = callRest.join('\n').trimEnd();
+                    return (
+                      <div key={j} className="rounded-lg border border-line bg-surface-2 overflow-hidden">
+                        <div className="flex items-start gap-2 px-2.5 py-1.5 min-w-0">
+                          <span className="shrink-0 font-mono text-[10px] leading-[18px] text-faint tabular-nums">
+                            {j + 1}
+                          </span>
+                          {card.tool && <ToolBadge tool={card.tool} />}
+                          <span className="min-w-0 font-mono text-[11px] leading-[18px] text-dim break-words">
+                            {callHead || (card.tool ? '' : '결과')}
+                          </span>
+                        </div>
+                        {callBody && (
+                          <pre className="px-2.5 pb-1.5 font-mono text-[11px] leading-5 text-faint whitespace-pre-wrap break-words max-h-[140px] overflow-y-auto scrollbox">
+                            {callBody}
+                          </pre>
+                        )}
+                        {card.output !== undefined && (
+                          <pre
+                            className="border-t border-line px-2.5 py-1.5 font-mono text-[11px] leading-5 text-faint whitespace-pre-wrap break-words max-h-[140px] overflow-y-auto scrollbox"
+                            style={{
+                              background: 'color-mix(in oklab, var(--color-surface-0) 60%, var(--color-surface-1))',
+                              borderLeft: '2px solid color-mix(in oklab, var(--color-mint) 40%, transparent)',
+                            }}
+                          >
+                            {card.output || '(출력 없음)'}
+                          </pre>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </details>
             );
