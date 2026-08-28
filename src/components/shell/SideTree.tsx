@@ -116,7 +116,11 @@ export default function SideTree({
       closeMenu();
     }
   }
-  const isOpen = (key: string) => open[key] ?? true;
+  // 날짜 그룹(d-*)은 기본 닫힘 — 단, 현재 보고 있는 회의가 속한 날짜는 열어둔다
+  const activeMeeting = meetings.find((m) => pathname.startsWith(`/meetings/${m.id}`));
+  const activeDateKey = activeMeeting ? `d-${dateKey(activeMeeting.startedAt)}` : null;
+  const isOpen = (key: string) =>
+    open[key] ?? (key.startsWith('d-') ? key === activeDateKey : true);
   const toggle = (key: string) => setOpen((o) => ({ ...o, [key]: !isOpen(key) }));
 
   const byDate = new Map<string, TreeMeeting[]>();
