@@ -2,8 +2,10 @@ import { db } from './db';
 
 export interface TranscriptItem {
   ts?: string;
-  role: 'user' | 'assistant' | 'tool' | string;
+  // 원문 전체(full)에는 'thinking'·'system'도 온다
+  role: 'user' | 'assistant' | 'tool' | 'thinking' | 'system' | string;
   tool?: string;
+  sub?: boolean; // 서브에이전트(sidechain) 항목 표시 (원문 전체 전용)
   text: string;
 }
 
@@ -67,10 +69,12 @@ export interface SessionRecord {
   skills?: SkillUse[];
   subagents?: SubagentGroup[];
   transcript: TranscriptItem[];
+  full?: TranscriptItem[]; // 절단 없는 원문 전체 (별도 컬럼에 저장, 조회는 페이지 단위)
 }
-export type SessionSummary = Omit<SessionRecord, 'transcript' | 'subagents'> & {
+export type SessionSummary = Omit<SessionRecord, 'transcript' | 'subagents' | 'full'> & {
   transcriptCount: number;
   subagentCount: number;
+  fullCount: number; // 원문 전체 항목 수 (0이면 원문 미수집 세션)
 };
 
 const SAFE = /^[A-Za-z0-9_.-]+$/;
@@ -127,12 +131,16 @@ export async function saveSession(projectId: string, repo: string, session: Sess
   check(projectId);
   check(session.id);
   const client = await db();
+  // 원문 전체는 별도 컬럼에 — 구버전 클라이언트(full 없음)가 기존 원문을 지우지 않게 coalesce
+  const { full, ...meta } = session;
   await client.query(
-    `INSERT INTO sessions (project_id, repo, session_id, started_at, ended_at, session)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO sessions (project_id, repo, session_id, started_at, ended_at, session, full_transcript)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      ON CONFLICT (project_id, session_id)
-     DO UPDATE SET repo = $2, started_at = $4, ended_at = $5, session = $6`,
-    [projectId, repo, session.id, session.startedAt || null, session.endedAt || null, session],
+     DO UPDATE SET repo = $2, started_at = $4, ended_at = $5, session = $6,
+                   full_transcript = coalesce($7, sessions.full_transcript)`,
+    [projectId, repo, session.id, session.startedAt || null, session.endedAt || null, meta,
+     full ? JSON.stringify(full) : null],
   );
 }
 
@@ -153,12 +161,44 @@ export async function listSessions(projectId: string): Promise<SessionSummary[]>
   const { rows } = await client.query(
     `SELECT session - 'transcript' - 'subagents' AS meta,
             jsonb_array_length(coalesce(session->'transcript', '[]'::jsonb)) AS tcount,
-            jsonb_array_length(coalesce(session->'subagents', '[]'::jsonb)) AS scount
+            jsonb_array_length(coalesce(session->'subagents', '[]'::jsonb)) AS scount,
+            jsonb_array_length(coalesce(full_transcript, '[]'::jsonb)) AS fcount
      FROM sessions WHERE project_id = $1
      ORDER BY ended_at DESC NULLS LAST`,
     [projectId],
   );
-  return rows.map((r) => ({ ...r.meta, transcriptCount: Number(r.tcount), subagentCount: Number(r.scount) }));
+  return rows.map((r) => ({
+    ...r.meta,
+    transcriptCount: Number(r.tcount),
+    subagentCount: Number(r.scount),
+    fullCount: Number(r.fcount),
+  }));
+}
+
+/** 원문 전체를 페이지 단위로 — 수만 항목·수 MB가 될 수 있어 한 번에 내리지 않는다 */
+export async function getSessionFullPage(
+  projectId: string,
+  id: string,
+  offset: number,
+  limit: number,
+): Promise<{ total: number; items: TranscriptItem[] } | null> {
+  check(projectId);
+  check(id);
+  const client = await db();
+  const { rows: totalRows } = await client.query(
+    `SELECT jsonb_array_length(full_transcript) AS total
+     FROM sessions WHERE project_id = $1 AND session_id = $2 AND full_transcript IS NOT NULL`,
+    [projectId, id],
+  );
+  if (totalRows.length === 0) return null;
+  const { rows } = await client.query(
+    `SELECT t.item
+     FROM sessions, LATERAL jsonb_array_elements(full_transcript) WITH ORDINALITY AS t(item, ord)
+     WHERE project_id = $1 AND session_id = $2
+     ORDER BY t.ord OFFSET $3 LIMIT $4`,
+    [projectId, id, offset, limit],
+  );
+  return { total: Number(totalRows[0].total), items: rows.map((r) => r.item) };
 }
 
 /** 프로젝트 전체 삭제 (커밋 레코드·세션·그래프) */

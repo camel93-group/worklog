@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { SessionRecord, SessionSummary } from '@/lib/artifacts';
 import { skillName } from '@/lib/skills';
 import ArtifactChat, { type CommitMarker } from '@/components/ArtifactChat';
+import FullTranscript from './FullTranscript';
 import SkillChips from './SkillChips';
 
 const fmtShort = (iso: string | null) => {
@@ -23,6 +24,7 @@ export default function SessionTimeline({
   const [openId, setOpenId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState<Record<string, SessionRecord>>({});
   const [loading, setLoading] = useState<string | null>(null);
+  const [mode, setMode] = useState<'clean' | 'full'>('clean');
 
   async function toggle(id: string) {
     if (openId === id) {
@@ -30,6 +32,7 @@ export default function SessionTimeline({
       return;
     }
     setOpenId(id);
+    setMode('clean');
     if (!loaded[id]) {
       setLoading(id);
       try {
@@ -94,29 +97,57 @@ export default function SessionTimeline({
               </span>
             </button>
             {open && (
-              <div className="border-t border-line max-h-[70vh] overflow-y-auto scrollbox">
-                {loading === s.id ? (
-                  <div className="p-10 grid place-items-center text-dim">
-                    <span className="spinner" />
-                  </div>
-                ) : loaded[s.id] ? (
-                  <>
-                    {(loaded[s.id].skills?.length ?? 0) > 0 && (
-                      <div className="flex items-center gap-1.5 flex-wrap px-5 pt-4">
-                        <SkillChips skills={loaded[s.id].skills!} />
-                      </div>
-                    )}
-                  <ArtifactChat
-                    transcript={loaded[s.id].transcript}
-                    markers={sessionCommits}
-                    repo={repo}
-                    header={null}
-                    subagents={loaded[s.id].subagents ?? []}
-                  />
-                  </>
-                ) : (
-                  <p className="p-6 text-[12.5px] text-dim">세션을 불러오지 못했습니다.</p>
-                )}
+              <div className="border-t border-line">
+                <div className="flex items-center gap-1 px-4 py-2 border-b border-line">
+                  <button
+                    onClick={() => setMode('clean')}
+                    className={`rounded-md px-2.5 py-1 text-[11px] transition-colors ${
+                      mode === 'clean' ? 'bg-surface-3 text-ink font-semibold' : 'text-faint hover:text-dim'
+                    }`}
+                  >
+                    정리본
+                  </button>
+                  <button
+                    onClick={() => setMode('full')}
+                    disabled={s.fullCount === 0}
+                    title={
+                      s.fullCount === 0
+                        ? '이 세션은 원문 수집 전에 저장됐습니다 — 다음 커밋(또는 ailog sync) 때 채워집니다'
+                        : undefined
+                    }
+                    className={`rounded-md px-2.5 py-1 text-[11px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                      mode === 'full' ? 'bg-surface-3 text-ink font-semibold' : 'text-faint hover:text-dim'
+                    }`}
+                  >
+                    원문 전체{s.fullCount > 0 && ` (${s.fullCount.toLocaleString()})`}
+                  </button>
+                </div>
+                <div className="max-h-[70vh] overflow-y-auto scrollbox">
+                  {mode === 'full' ? (
+                    <FullTranscript repo={repo} id={s.id} total={s.fullCount} />
+                  ) : loading === s.id ? (
+                    <div className="p-10 grid place-items-center text-dim">
+                      <span className="spinner" />
+                    </div>
+                  ) : loaded[s.id] ? (
+                    <>
+                      {(loaded[s.id].skills?.length ?? 0) > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap px-5 pt-4">
+                          <SkillChips skills={loaded[s.id].skills!} />
+                        </div>
+                      )}
+                      <ArtifactChat
+                        transcript={loaded[s.id].transcript}
+                        markers={sessionCommits}
+                        repo={repo}
+                        header={null}
+                        subagents={loaded[s.id].subagents ?? []}
+                      />
+                    </>
+                  ) : (
+                    <p className="p-6 text-[12.5px] text-dim">세션을 불러오지 못했습니다.</p>
+                  )}
+                </div>
               </div>
             )}
           </div>

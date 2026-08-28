@@ -40,6 +40,8 @@ async function ensureSchema(): Promise<void> {
       PRIMARY KEY (project_id, session_id)
     );
     CREATE INDEX IF NOT EXISTS artifacts_project_date ON artifacts (project_id, committed_at DESC);
+    -- 절단 없는 원문 전체 대화 — 목록·상세 쿼리가 무거워지지 않게 session과 분리 보관
+    ALTER TABLE sessions ADD COLUMN IF NOT EXISTS full_transcript jsonb;
   `);
 }
 
